@@ -16,9 +16,9 @@ def linear(input_, output_size, scope=None):
 
     shape = input_.get_shape().as_list()
     if len(shape) != 2:
-        raise ValueError(f"Linear is expecting 2D arguments: %s".format(shape))
+        raise ValueError("Linear is expecting 2D arguments: {}".format(shape))
     if not shape[1]:
-        raise ValueError(f"Linear expects shape[1] of arguments: %s".format(shape))
+        raise ValueError("Linear expects shape[1] of arguments: {}".format(shape))
     input_size = shape[1]
 
     with tf.variable_scope(scope or "SimpleLinear"):
@@ -27,5 +27,24 @@ def linear(input_, output_size, scope=None):
     
     return tf.matmul(input_, tf.transpose(matrix)) + bias_term
 
+# The highway layer is borrowed from https://github.com/mkroutikov/tf-lstm-char-cnn
+def highway(input_,. size, num_layers=1, bias=-2.0, f=tf.nn.relu, scope="Highway"):
+    """
+    Highway Network (cf. http://arxiv.org/abs/1505.00387).
+    t = sigmoid(Wy + b)
+    z = t * g(Wy + b) + (1 - t) * y
+    where g is nonlinearity, t is transform gate, and (1 - t) is carry gate.
+    """
+
+    with tf.variable_scope(scope):
+        for idx in range(num_layers):
+            g = f(linear(input_, size, scope="highway_lin_{}".format(idx)))
+
+            t = tf.sigmoid(linear(input_, size, scope="highway_gate_{}".format(idx)) + bias)
+
+            output = t * g + (1. - t) * input_
+            input_ = output
+
+    return output
 
 
