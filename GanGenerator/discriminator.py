@@ -28,7 +28,7 @@ def linear(input_, output_size, scope=None):
     return tf.matmul(input_, tf.transpose(matrix)) + bias_term
 
 # The highway layer is borrowed from https://github.com/mkroutikov/tf-lstm-char-cnn
-def highway(input_,. size, num_layers=1, bias=-2.0, f=tf.nn.relu, scope="Highway"):
+def highway(input_, size, num_layers=1, bias=-2.0, f=tf.nn.relu, scope="Highway"):
     """
     Highway Network (cf. http://arxiv.org/abs/1505.00387).
     t = sigmoid(Wy + b)
@@ -79,7 +79,7 @@ class Discriminator(object):
                 D_feature = self.FeatureExtractor_unit(self.D_input_x,self.dropout_keep_prob)
                 self.feature_scope.reuse_variables()
 
-            D_scores, D_predictions,self.ypred_for_auc = self.classification(D_feature)
+            D_scores, D_predictions, self.ypred_for_auc = self.classification(D_feature)
             losses = tf.nn.softmax_cross_entropy_with_logits(logits=D_scores, labels=self.D_input_y)
             self.D_loss = tf.reduce_mean(losses) + self.l2_reg_lambda * self.D_l2_loss
 
@@ -102,28 +102,28 @@ class Discriminator(object):
 
                 pooled_outputs = []
                 for filter_size, num_filter in zip(self.filter_sizes, self.num_filters):
-                    with tf.name_scope("conv-maxpool-%s" % filter_size) as scope:
+                    with tf.name_scope("conv-maxpool-{}".format(filter_size)) as scope:
                         filter_shape = [filter_size, self.dis_emb_dim, 1, num_filter]
-                        W = tf.get_variable(name="W-%s" % filter_size,
+                        W = tf.get_variable(name="W-{}".format(filter_size),
                                             initializer=tf.truncated_normal(filter_shape, stddev=0.1))
-                        b = tf.get_variable(name="b-%s" % filter_size,
+                        b = tf.get_variable(name="b-{}".format(filter_size),
                                             initializer=tf.constant(0.1, shape=[num_filter]))
                         conv = tf.nn.conv2d(
                             embedded_chars_expanded,
                             W,
                             strides=[1, 1, 1, 1],
                             padding="VALID",
-                            name="conv-%s" % filter_size)
+                            name="conv-{}".format(filter_size))
                         
                         # Apply nonlinearity
-                        h = tf.nn.relu(tf.nn.bias_add(conv, b), name="relu-%s" % filter_size)
+                        h = tf.nn.relu(tf.nn.bias_add(conv, b), name="relu-{}".format(filter_size))
                         # Maxpooling over the outputs
                         pooled = tf.nn.max_pool(
                             h,
                             ksize=[1, self.sequence_length - filter_size + 1, 1, 1],
                             strides=[1, 1, 1, 1],
                             padding='VALID',
-                            name="pool-%s" % filter_size)
+                            name="pool-{}".format(filter_size))
                         
                         pooled_outputs.append(pooled)
                 # Combine all the pooled features
