@@ -48,7 +48,7 @@ def highway(input_, size, num_layers=1, bias=-2.0, f=tf.nn.relu, scope="Highway"
     return output
 
 
-class Discriminator(object):
+class Discriminator:
     def __init__(self, sequence_length, num_classes, vocab_size,dis_emb_dim,filter_sizes, num_filters,batch_size,hidden_dim, start_token,goal_out_size,step_size,l2_reg_lambda=0.0):
         self.sequence_length = sequence_length
         self.num_classes = num_classes
