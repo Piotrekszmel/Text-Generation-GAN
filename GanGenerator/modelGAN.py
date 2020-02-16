@@ -34,3 +34,12 @@ class GeneratorGan:
 
         self.epis = 0.65
         self.tem = 0.8
+
+        with tf.variable_scope("place_holder"):
+            self.x = tf.placeholder(tf.int32, shape=[self.batch_size,self.sequence_length])
+            self.reward = tf.placeholder(tf.float32, shape=[self.batch_size,self.sequence_length / self.step_size])
+            self.given_num = tf.placeholder(tf.int32)
+            self.drop_out = tf.placeholder(tf.float32, name="dropout_keep_prob")
+            self.train = tf.placeholder(tf.int32, None, name="train")
+        
+        
