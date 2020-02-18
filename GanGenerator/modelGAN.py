@@ -42,4 +42,25 @@ class GeneratorGan:
             self.drop_out = tf.placeholder(tf.float32, name="dropout_keep_prob")
             self.train = tf.placeholder(tf.int32, None, name="train")
         
+        with tf.variable_scope('Worker'):
+            self.g_embeddings = tf.Variable(tf.random_normal([self.vocab_size, self.emb_dim], stddev=0.1))
+            self.worker_params.append(self.g_embeddings)
+            self.g_worker_recurrent_unit = self.create_Worker_recurrent_unit(self.worker_params)  # maps h_tm1 to h_t for generator
+            self.g_worker_output_unit = self.create_Worker_output_unit(self.worker_params)  # maps h_t to o_t (output token logits)
+            self.W_workerOut_change = tf.Variable(tf.random_normal([self.vocab_size, self.goal_size], stddev=0.1))
+
+            self.g_change = tf.Variable(tf.random_normal([self.goal_out_size, self.goal_size], stddev=0.1))
+            self.worker_params.extend([self.W_workerOut_change,self.g_change])
+
+            self.h0_worker = tf.zeros([self.batch_size, self.hidden_dim])
+            self.h0_worker = tf.stack([self.h0_worker, self.h0_worker])
+
+        with tf.variable_scope('Manager'):
+            self.g_manager_recurrent_unit = self.create_Manager_recurrent_unit(self.manager_params)  # maps h_tm1 to h_t for generator
+            self.g_manager_output_unit = self.create_Manager_output_unit(self.manager_params)  # maps h_t to o_t (output token logits)
+            self.h0_manager = tf.zeros([self.batch_size, self.hidden_dim])
+            self.h0_manager = tf.stack([self.h0_manager, self.h0_manager])
+
+            self.goal_init = tf.get_variable("goal_init",initializer=tf.truncated_normal([self.batch_size,self.goal_out_size], stddev=0.1))
+            self.manager_params.extend([self.goal_init])
         
